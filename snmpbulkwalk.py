@@ -15,8 +15,9 @@
 #   # for example mac address value will be always returned as 6 bytes string !!!!
 #
 # This method created primary for internal usage to get data from 1000+ devices every minute
-# IT IS not full support of SNMP protocol, it just simple create request packet and make simple unparse of response packet
-# without full support of all answer messsages, no error handling, no full validation of response.
+# IT IS not full support of SNMP protocol, it just simple create request packet 
+# and make simple unparse of response packet without full support of all answer messsages, 
+# no error handling, no full validation of response.
 #
 # Author: Ivan Zhiltsov (ivan.zhiltsov@pyzzle.ru)
 # Created to be used inside www.pyzzle.ru ISP management system
@@ -48,7 +49,8 @@ def oid_rawbytes2str(raw_bytes):
             oid += '.%s' % v
             skip_next = False
         else:
-            oid += '.%s' % ((v-128)*128+ord(raw_bytes[idx+2])) # +2 we start iteration of second byte and need next byte from current
+            # idx+2 because we start iteration of second byte and need next byte from current
+            oid += '.%s' % ((v-128)*128+ord(raw_bytes[idx+2])) 
             skip_next = True
 
     return oid
@@ -86,7 +88,8 @@ def generate_request_packet(oid, community='public', session_id=123456, request_
     """
 
 
-    data = "\x02\x01\x01" # header with out first 2 bytes (will be inserted at the end with total packet length)
+    data = "\x02\x01\x01" # header with out first 2 bytes
+                          # (will be inserted at the end with total packet length)
 
     data += chr(4) # v2c
     data += chr(len(community))
@@ -121,7 +124,8 @@ def parse_response_packet(received, community=None, session_id=None):
         Return list of tuples with (oid,value)
 
         received - raw udp packet content to parse
-        community and session_id - values from request. if defined method will check that resonse is about this request
+        community and session_id - values from request. 
+            if defined method will check that resonse is about this request
 
         if some thing wrong with packet it will return None
         integer and timeticks returns as integer
@@ -222,7 +226,8 @@ def snmpbulkwalk(host, oid, community='public', port=161, timeout=None):
     while response:
         if not res and (not response[0][0].startswith(oid) or (response[0][0]!=oid and response[0][0][len(oid)]!='.')):
             # if very-first response in not from our oid tree
-            # we for compatibility we need to make snmpget get request for selected oid (like console net-snmp tool does)
+            # we for compatibility we need to make snmpget get request for selected oid 
+            # (like console net-snmp tool does)
 
             data = generate_request_packet(oid, community=community, session_id=session_id, request_type='\xa0\x1a')
             UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -238,8 +243,10 @@ def snmpbulkwalk(host, oid, community='public', port=161, timeout=None):
                 break
 
         for c_oid, c_value in response:
-            if c_oid.startswith(oid): # add to resulting dictionary only oid from request tree (response may have next items)
-                if c_oid==oid or c_oid[len(oid)]=='.': # to avoid false math oid like '.x.x.10' with request of '.x.x.1'
+            if c_oid.startswith(oid): # add to resulting dictionary only oid from request tree 
+                                      # (response may have next items)
+                if c_oid==oid or c_oid[len(oid)]=='.': # to avoid false math oid 
+                                                       # like '.x.x.10' with request of '.x.x.1'
                     res[c_oid] = c_value
 
 
